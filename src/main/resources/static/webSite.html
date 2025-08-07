@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="keywords" content="HTML, CSS" />
+    <meta name="description" content="Inventory Manager" />
+    <title>Laptop Inventory</title>
+    <style>
+      img {
+        width: 50%;
+        transform: translateX(3%);
+      }
+
+      p {
+        background-color: #ffffff;
+        text-indent: 20px;
+        font-family: cursive;
+        font-weight: bold;
+        font-size: 24px;
+        color: #333333bb;
+        transform: translateY(-30px);
+      }
+
+      table {
+        width: 80%;
+        border-collapse: collapse;
+        margin-top: 30px;
+      }
+
+      th {
+        border: 1px solid #acacac;
+        padding: 7px;
+        text-align: center;
+      }
+
+      td {
+        border: 1px solid #acacac;
+        padding: 5px;
+        text-align: left;
+      }
+    </style>
+  </head>
+
+  <body>
+    <img src="images/neurotech.png" alt="NEUROTECHR3" />
+    <p>Laptop Inventory</p>
+    <button onclick="location.href='addLaptop.html'">Add Laptop</button>
+
+    <div style="margin: 10px 0">
+      <input
+        id="deletePcNumber"
+        type="text"
+        placeholder="Laptop Number to Delete"
+        style="padding: 5px; width: 150px"
+      />
+      <button onclick="deleteLaptop()" style="padding: 5px 12x">
+        Delete Laptop
+      </button>
+    </div>
+
+    <table>
+      <thead>
+        <tr>
+          <th>Laptop Number</th>
+          <th>Status</th>
+          <th>Device Info</th>
+          <th>Location TYPE</th>
+          <th>User ID</th>
+          <th>Any Desk</th>
+        </tr>
+      </thead>
+      <tbody id="laptop-table-body"></tbody>
+    </table>
+
+    <script>
+      
+      const API_BASE = "https://YOUR_RENDER_APP_URL";
+
+      async function deleteLaptop() {
+        const pcNumber = document.getElementById("deletePcNumber").value.trim();
+        if (!pcNumber) {
+          alert("Please enter a Laptop Number to delete.");
+          return;
+        }
+
+        try {
+          const res = await fetch(`${API_BASE}/api/LapTop/${encodeURIComponent(pcNumber)}`, {
+            method: "DELETE",
+          });
+
+          const message = await res.text();
+          if (!res.ok) {
+            throw new Error(message || "Delete failed");
+          }
+
+          alert(message || "Laptop deleted!");
+          await loadLaptops(); // reload after deletion
+        } catch (error) {
+          console.error("Error deleting laptop:", error);
+          alert("Failed to delete the laptop.");
+        }
+      }
+
+      async function loadLaptops() {
+        try {
+          // cache-buster query param so you always see fresh data
+          const res = await fetch(`${API_BASE}/api/LapTop?ts=${Date.now()}`);
+          if (!res.ok) throw new Error("Failed to load laptops");
+
+          const laptops = await res.json();
+          const tbody = document.getElementById("laptop-table-body");
+          tbody.innerHTML = "";
+
+          laptops.forEach((l) => {
+            const row = document.createElement("tr");
+            row.innerHTML = `
+              <td><a href="detailedView.html?pcNumber=${encodeURIComponent(l.pcNumber || "")}">
+                ${l.pcNumber || ""}
+              </a></td>
+              <td>${l.status ? "Available" : "In Use"}</td>
+              <td>${l.deviceInfo || ""}</td>
+              <td>${l.location || ""}</td>
+              <td>${l.userID || ""}</td>
+              <td>${l.anyDesk ?? ""}</td>
+            `;
+            tbody.appendChild(row);
+          });
+        } catch (err) {
+          console.error("Error loading laptops:", err);
+          alert("Failed to load laptops from the server.");
+        }
+      }
+
+      // Load on page open
+      loadLaptops();
+    </script>
+  </body>
+</html>
