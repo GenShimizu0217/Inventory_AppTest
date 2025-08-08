@@ -39,35 +39,28 @@
     </table>
 
     <script>
+      const API_BASE = "https://inventoryapptest-production.up.railway.app";
+
       async function loadHistoryLog() {
         const urlParams = new URLSearchParams(window.location.search);
         const pcNumber = urlParams.get("pcNumber");
-        console.log("Fetching history for PC Number:", pcNumber);
-
-        if (!pcNumber) {
-          console.error("No pcNumber found in URL");
-          return;
-        }
-
+        if (!pcNumber) return;
+    
         try {
-            const API_BASE = "https://inventoryapptest-production.up.railway.app";
-
-            const response = await fetch(`${API_BASE}/api/LapTop/${pcNumber}`);
+          const response = await fetch(`${API_BASE}/api/LapTop/${pcNumber}`);
           if (!response.ok) throw new Error("Failed to fetch laptop data");
-
+    
           const laptop = await response.json();
-          console.log("Laptop data:", laptop);
-
           const history = laptop.historyLog || [];
-
+    
           const tbody = document.getElementById("history-log-body");
           tbody.innerHTML = "";
-
+    
           if (history.length === 0) {
             tbody.innerHTML = `<tr><td colspan="2">No history available</td></tr>`;
             return;
           }
-
+    
           history.forEach((userID, index) => {
             const row = document.createElement("tr");
             row.innerHTML = `<td>${index + 1}</td><td>${userID}</td>`;
@@ -77,9 +70,10 @@
           console.error("Error loading history log:", error);
         }
       }
-
+    
       loadHistoryLog();
-    </script>
+</script>
   </body>
 
 </html>
+
