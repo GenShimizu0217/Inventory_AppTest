@@ -176,53 +176,51 @@
         }
       </script>
     </form>
-    <script>
-      async function loadLaptopDetails() {
-        const urlParams = new URLSearchParams(window.location.search);
-        const pcNumber = urlParams.get("pcNumber"); // Get the pcNumber from the URL
+      <script>
+        const API_BASE = "https://inventoryapptest-production.up.railway.app";
 
-        const res = await fetch(`postgresql://r3tha:w5YTRXtem3ix3JaouiBCmtm22GLk9jGT@dpg-d27vlip5pdvs7381i7q0-a.ohio-postgres.render.com/laptop_inventory/api/LapTop/${pcNumber}`);
-        const laptop = await res.json(); // Fetch the laptop details
+        async function loadLaptopDetails() {
+          const urlParams = new URLSearchParams(window.location.search);
+          const pcNumber = urlParams.get("pcNumber");
 
-        // Auto Fill the form with laptop details
-        const form = document.getElementById("editLaptopForm");
-        for (const field in laptop) {
-          if (form.elements[field]) {
-            // Check if the form has an element for the field
-            form.elements[field].value = laptop[field] || ""; // Set the value, defaulting to empty string if undefined
+          const res = await fetch(`${API_BASE}/api/LapTop/${pcNumber}`);
+          const laptop = await res.json();
+
+          const form = document.getElementById("editLaptopForm");
+          for (const field in laptop) {
+            if (form.elements[field]) {
+              form.elements[field].value = laptop[field] || "";
+            }
           }
         }
-      }
+          
+        document
+            .getElementById("editLaptopForm")
+            .addEventListener("submit", async function (e) {
+            e.preventDefault();
+            const formData = new FormData(this);
+            const data = Object.fromEntries(formData.entries());
 
-      document
-        .getElementById("editLaptopForm")
-        .addEventListener("submit", async function (e) {
-          e.preventDefault(); // Preventing the form from reloading the page
-          const formData = new FormData(this);
-          const data = Object.fromEntries(formData.entries()); // Convert form data to an object
+            data.price = parseFloat(data.price);
+            data.anyDesk = parseInt(data.anyDesk);
+            data.status = data.status === "true";
 
-          data.price = parseFloat(data.price);
-          data.anyDesk = parseInt(data.anyDesk);
-          data.status = data.status === "true";
-
-          const res = await fetch(
-            `postgresql://r3tha:w5YTRXtem3ix3JaouiBCmtm22GLk9jGT@dpg-d27vlip5pdvs7381i7q0-a.ohio-postgres.render.com/laptop_inventory/api/LapTop/${data.pcNumber}`,
-            {
+            const res = await fetch(`${API_BASE}/api/LapTop/${data.pcNumber}`, {
               method: "PUT",
               headers: { "Content-Type": "application/json" },
-              body: JSON.stringify(data), // Sending the updated laptop data
-            }
-          );
+              body: JSON.stringify(data),
+            });
 
-          if (res.ok) {
-            alert("Laptop updated successfully!");
-            window.location.href = "webSite.html";
-          } else {
-            alert("Error updating laptop.");
-          }
-        });
+      if (res.ok) {
+        alert("Laptop updated successfully!");
+        window.location.href = "webSite.html";
+      } else {
+        alert("Error updating laptop.");
+      }
+    });
 
-      loadLaptopDetails();
-    </script>
+  loadLaptopDetails();
+</script>
   </body>
+
 </html>
