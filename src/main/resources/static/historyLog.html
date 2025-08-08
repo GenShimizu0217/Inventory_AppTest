@@ -50,9 +50,9 @@
         }
 
         try {
-          const response = await fetch(
-            `postgresql://r3tha:w5YTRXtem3ix3JaouiBCmtm22GLk9jGT@dpg-d27vlip5pdvs7381i7q0-a.ohio-postgres.render.com/laptop_inventory/api/LapTop/${pcNumber}`
-          );
+            const API_BASE = "https://inventoryapptest-production.up.railway.app";
+
+            const response = await fetch(`${API_BASE}/api/LapTop/${pcNumber}`);
           if (!response.ok) throw new Error("Failed to fetch laptop data");
 
           const laptop = await response.json();
@@ -81,4 +81,5 @@
       loadHistoryLog();
     </script>
   </body>
+
 </html>
