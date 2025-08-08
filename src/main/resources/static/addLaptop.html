@@ -80,36 +80,38 @@
 
     <script>
       document
-        .getElementById("laptopForm")
-        .addEventListener("submit", async function (e) {
-          e.preventDefault();
-          const formData = new FormData(this);
-          const data = Object.fromEntries(formData.entries());
+      .getElementById("laptopForm")
+      .addEventListener("submit", async function (e) {
+        e.preventDefault();
+        const formData = new FormData(this);
+        const data = Object.fromEntries(formData.entries());
 
-          // Type conversion
+        // Type conversion
+        data.price = parseFloat(data.price);
+        data.anyDesk = parseInt(data.anyDesk);
+        data.status = data.status === "true";
 
-          data.price = parseFloat(data.price);
-          data.anyDesk = parseInt(data.anyDesk);
-          data.status = data.status === "true";
+        try {
+          const API_BASE = "https://inventoryapptest-production.up.railway.app";
 
-          try {
-            const res = await fetch("postgresql://r3tha:w5YTRXtem3ix3JaouiBCmtm22GLk9jGT@dpg-d27vlip5pdvs7381i7q0-a.ohio-postgres.render.com/laptop_inventory/api/LapTop", {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify(data),
-            });
-
-            if (res.ok) {
-              alert("Laptop added!");
-              window.location.href = "webSite.html";
-            } else {
-              alert("Error adding laptop.");
-            }
-          } catch (err) {
-            console.error("Fetch error:", err);
-            alert("Failed to connect to server.");
+          const res = await fetch(`${API_BASE}/api/LapTop`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(data),
+          });
+    
+          if (res.ok) {
+            alert("Laptop added!");
+            window.location.href = "webSite.html";
+          } else {
+            alert("Error adding laptop.");
           }
-        });
+        } catch (err) {
+          console.error("Fetch error:", err);
+          alert("Failed to connect to server.");
+        }
+      });
     </script>
   </body>
+
 </html>
