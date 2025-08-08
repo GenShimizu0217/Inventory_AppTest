@@ -21,7 +21,13 @@ public class LapTop {
     @Id
     @Column(name = "pc_number")
     private String pcNumber;
-
+    
+    // Update the userID and add them to the history
+    @ElementCollection
+    @CollectionTable(name = "laptop_history_log", joinColumns = @JoinColumn(name = "pc_number"))
+    @Column(name = "user_id")
+    private List<String> historyLog = new ArrayList<>();
+    
     @Column(name = "procured")
     private String procured;
 
@@ -178,11 +184,7 @@ public class LapTop {
         return userID;
     }
 
-    // Update the userID and add them to the history
-    @ElementCollection
-    @CollectionTable(name = "laptop_history_log", joinColumns = @JoinColumn(name = "pc_number"))
-    @Column(name = "user_id")
-    private List<String> historyLog = new ArrayList<>();
+
 
     public void updateHistory(String userID) {
         if (userID != null && !userID.isEmpty()) {
@@ -221,5 +223,6 @@ public class LapTop {
     public void setLastUpdate(LocalDate lastUpdate) {
         this.lastUpdate = lastUpdate;
     }
+
 
 }
