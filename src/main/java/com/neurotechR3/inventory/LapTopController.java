@@ -84,4 +84,5 @@ public class LapTopController {
         laptopRepo.deleteByPcNumber(pcNumber);
         return "Laptop deleted!";
     }
+
 }
