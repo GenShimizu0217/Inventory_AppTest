@@ -4,43 +4,16 @@
     <meta charset="UTF-8" />
     <title>Add New Laptop</title>
     <style>
-      form {
-        width: 60%;
-        margin: auto;
-        display: flex;
-        flex-direction: column;
-        gap: 12px;
-        font-family: sans-serif;
-      }
-
-      input,
-      select {
-        padding: 8px;
-        font-size: 14px;
-      }
-
-      button#submit {
-        padding: 10px;
-        background-color: #333;
-        color: white;
-        border: 5px solid #333;
-        cursor: pointer;
-      }
-
-      button#dateButton {
-        background-color: #e7e7e7;
-        color: rgb(51, 51, 51);
-      }
-      h2 {
-        text-align: center;
-      }
+      form { width: 60%; margin: auto; display: flex; flex-direction: column; gap: 12px; font-family: sans-serif; }
+      input, select { padding: 8px; font-size: 14px; }
+      button#submit { padding: 10px; background-color: #333; color: white; border: 5px solid #333; cursor: pointer; }
+      button#dateButton { background-color: #e7e7e7; color: #333; }
+      h2 { text-align: center; }
     </style>
   </head>
   <body>
     <h2>Add a New Laptop</h2>
-    <button id="submit" onclick="location.href='webSite.html'">
-      Back To Home
-    </button>
+    <button id="backButton" onclick="location.href='webSite.html'">Back To Home</button>
 
     <form id="laptopForm">
       <input name="procured" placeholder="Procured Date" />
@@ -48,7 +21,6 @@
       <input name="pcNumber" placeholder="PC Number" required />
       <input name="location" placeholder="Location Type" />
       <input name="serialNum" placeholder="Serial Number/Source" />
-
       <input name="price" type="number" step="0.01" placeholder="Value" />
       <input name="notes" placeholder="Notes" />
       <input name="email" type="email" placeholder="Email" />
@@ -56,56 +28,103 @@
       <input name="userID" placeholder="User ID" />
       <input name="anyDesk" type="number" placeholder="AnyDesk ID" />
       <input name="r3thaVersion" placeholder="R3THA Version" />
-      <input
-        name="lastUpdate"
-        id="lastUpdate"
-        type="date"
-        placeholder="Last Update"
-      /><button type="button" id="dateButton" onclick="setTodayDate()">
-        Set to Today
-      </button>
+      <input name="lastUpdate" id="lastUpdate" type="date" placeholder="Last Update" />
+      <button type="button" id="dateButton" onclick="setTodayDate()">Set to Today</button>
 
-      <script>
-        function setTodayDate() {
-          const today = new Date().toISOString().split("T")[0];
-          document.getElementById("lastUpdate").value = today;
-        }
-      </script>
-      <select name="status" not required>
+      <select name="status">
         <option value="true">Available</option>
         <option value="false">In Use</option>
       </select>
       <button id="submit" type="submit">Submit</button>
     </form>
 
+    <!-- QR generator library -->
+    <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
+
     <script>
-      document
-      .getElementById("laptopForm")
-      .addEventListener("submit", async function (e) {
+      function setTodayDate() {
+        const today = new Date().toISOString().split("T")[0];
+        document.getElementById("lastUpdate").value = today;
+      }
+
+      // Build the detail URL (works on GitHub Pages repo path or localhost)
+      function detailUrlFor(pcNumber) {
+        const base = location.origin + location.pathname.replace(/\/[^\/]*$/, '/');
+        return `${base}detailedView.html?pcNumber=${encodeURIComponent(pcNumber)}`;
+      }
+
+      // Generate QR PNG for the detail URL, auto-download, and open a preview window
+      async function downloadQrForDetail(pcNumber) {
+        const url = detailUrlFor(pcNumber);
+        return new Promise((resolve, reject) => {
+          QRCode.toDataURL(url, { width: 512, margin: 1 }, (err, dataUrl) => {
+            if (err) return reject(err);
+
+            // auto-download
+            const a = document.createElement('a');
+            a.href = dataUrl;
+            a.download = `LaptopQR_${pcNumber}.png`;
+            document.body.appendChild(a);
+            a.click();
+            a.remove();
+
+            // optional preview window for print/save
+            try {
+              const w = window.open('', '_blank');
+              if (w && w.document) {
+                w.document.write('<title>QR Code</title>');
+                w.document.body.innerHTML = `
+                  <div style="font-family:system-ui;padding:16px">
+                    <h3 style="margin:0 0 8px 0">Laptop ${pcNumber}</h3>
+                    <img src="${dataUrl}" style="width:320px;display:block;margin-bottom:8px"/>
+                    <p style="word-break:break-all;margin:0 0 12px 0">${url}</p>
+                    <button onclick="window.print()" style="padding:8px 12px">Print</button>
+                  </div>`;
+              }
+            } catch (_) {}
+
+            resolve();
+          });
+        });
+      }
+
+      document.getElementById("laptopForm").addEventListener("submit", async function (e) {
         e.preventDefault();
         const formData = new FormData(this);
         const data = Object.fromEntries(formData.entries());
 
-        // Type conversion
-        data.price = parseFloat(data.price);
-        data.anyDesk = parseInt(data.anyDesk);
-        data.status = data.status === "true";
+        // Robust type conversion (keep nulls instead of NaN)
+        data.price   = data.price   ? parseFloat(data.price) : null;
+        data.anyDesk = data.anyDesk ? parseInt(data.anyDesk) : null;
+        data.status  = data.status === "true";
+
+        const API_BASE = "https://inventoryapptest-production.up.railway.app";
 
         try {
-          const API_BASE = "https://inventoryapptest-production.up.railway.app";
-
           const res = await fetch(`${API_BASE}/api/LapTop`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify(data),
           });
-    
-          if (res.ok) {
-            alert("Laptop added!");
-            window.location.href = "webSite.html";
-          } else {
-            alert("Error adding laptop.");
+
+          if (!res.ok) {
+            const msg = await res.text().catch(() => "");
+            alert(msg || "Error adding laptop.");
+            return;
           }
+
+          // Try to read created object; fall back to the submitted pcNumber
+          let createdPc = data.pcNumber;
+          try {
+            const created = await res.json();
+            if (created && created.pcNumber) createdPc = created.pcNumber;
+          } catch (_) {}
+
+          // Generate + download QR for this laptop's detail page
+          await downloadQrForDetail(createdPc);
+
+          // Optional: go straight to the detail page of the new laptop
+          location.href = `detailedView.html?pcNumber=${encodeURIComponent(createdPc)}`;
         } catch (err) {
           console.error("Fetch error:", err);
           alert("Failed to connect to server.");
@@ -113,5 +132,4 @@
       });
     </script>
   </body>
-
 </html>
