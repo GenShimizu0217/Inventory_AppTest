@@ -7,6 +7,20 @@
     <meta name="description" content="Inventory Manager" />
     <title>Laptop Inventory</title>
     <style>
+      html,
+      body {
+        font-family: Arial, Helvetica, sans-serif;
+      }
+
+      *,
+      *::before,
+      *::after {
+        font-family: inherit;
+      }
+      ::placeholder {
+        font-family: inherit;
+      }
+
       img {
         width: 50%;
         transform: translateX(3%);
@@ -15,7 +29,6 @@
       p {
         background-color: #ffffff;
         text-indent: 20px;
-        font-family: cursive;
         font-weight: bold;
         font-size: 24px;
         color: #333333bb;
@@ -27,13 +40,11 @@
         border-collapse: collapse;
         margin-top: 30px;
       }
-
       th {
         border: 1px solid #acacac;
         padding: 7px;
         text-align: center;
       }
-
       td {
         border: 1px solid #acacac;
         padding: 5px;
@@ -74,7 +85,6 @@
     </table>
 
     <script>
-      
       const API_BASE = "https://inventoryapptest-production.up.railway.app";
 
       async function deleteLaptop() {
@@ -85,9 +95,12 @@
         }
 
         try {
-          const res = await fetch(`${API_BASE}/api/LapTop/${encodeURIComponent(pcNumber)}`, {
-            method: "DELETE",
-          });
+          const res = await fetch(
+            `${API_BASE}/api/LapTop/${encodeURIComponent(pcNumber)}`,
+            {
+              method: "DELETE",
+            }
+          );
 
           const message = await res.text();
           if (!res.ok) {
@@ -115,7 +128,9 @@
           laptops.forEach((l) => {
             const row = document.createElement("tr");
             row.innerHTML = `
-              <td><a href="detailedView.html?pcNumber=${encodeURIComponent(l.pcNumber || "")}">
+              <td><a href="detailedView.html?pcNumber=${encodeURIComponent(
+                l.pcNumber || ""
+              )}">
                 ${l.pcNumber || ""}
               </a></td>
               <td>${l.status ? "Available" : "In Use"}</td>
@@ -136,5 +151,4 @@
       loadLaptops();
     </script>
   </body>
-
 </html>
