@@ -4,8 +4,21 @@
     <meta charset="UTF-8" />
     <title>History Log</title>
     <style>
+      html,
       body {
-        font-family: Arial, sans-serif;
+        font-family: Arial, Helvetica, sans-serif;
+      }
+
+      *,
+      *::before,
+      *::after {
+        font-family: inherit;
+      }
+      ::placeholder {
+        font-family: inherit;
+      }
+
+      body {
         margin: 20px;
       }
       h2 {
@@ -45,22 +58,22 @@
         const urlParams = new URLSearchParams(window.location.search);
         const pcNumber = urlParams.get("pcNumber");
         if (!pcNumber) return;
-    
+
         try {
           const response = await fetch(`${API_BASE}/api/LapTop/${pcNumber}`);
           if (!response.ok) throw new Error("Failed to fetch laptop data");
-    
+
           const laptop = await response.json();
           const history = laptop.historyLog || [];
-    
+
           const tbody = document.getElementById("history-log-body");
           tbody.innerHTML = "";
-    
+
           if (history.length === 0) {
             tbody.innerHTML = `<tr><td colspan="2">No history available</td></tr>`;
             return;
           }
-    
+
           history.forEach((userID, index) => {
             const row = document.createElement("tr");
             row.innerHTML = `<td>${index + 1}</td><td>${userID}</td>`;
@@ -70,10 +83,8 @@
           console.error("Error loading history log:", error);
         }
       }
-    
+
       loadHistoryLog();
-</script>
+    </script>
   </body>
-
 </html>
-
