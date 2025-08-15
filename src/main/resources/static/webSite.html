@@ -7,38 +7,50 @@
     <meta name="description" content="Inventory Manager" />
     <title>Laptop Inventory</title>
     <style>
+      /* Font */
+      :root {
+        --app-font: Arial, Helvetica, sans-serif;
+      }
       html,
       body {
-        font-family: Arial, Helvetica, sans-serif;
+        font-family: var(--app-font);
       }
 
-      *,
-      *::before,
-      *::after {
-        font-family: inherit;
-      }
-      ::placeholder {
-        font-family: inherit;
+      /* Layout container (centers the page and aligns a left edge) */
+      .container {
+        max-width: 1100px;
+        margin: 24px auto;
+        padding: 0 16px;
       }
 
-      img {
-        width: 50%;
-        transform: translateX(3%);
+      /* Header row: logo + title share the same baseline/left edge */
+      .header {
+        display: flex;
+        align-items: flex-end; /* align text baseline-ish with logo bottom */
+        gap: 16px;
+        margin-bottom: 12px;
       }
-
-      p {
-        background-color: #ffffff;
-        text-indent: 20px;
-        font-weight: bold;
-        font-size: 24px;
+      .logo {
+        height: 80px; /* fixed, tidy size */
+        width: auto;
+      }
+      .title {
+        margin: 0;
+        font-weight: 700;
+        font-size: 28px;
         color: #333333bb;
-        transform: translateY(-30px);
+        line-height: 1.1;
       }
 
+      /* Actions row under the header */
+      .actions {
+        margin: 8px 0 16px;
+      }
+
+      /* Table fills the container */
       table {
-        width: 80%;
+        width: 100%;
         border-collapse: collapse;
-        margin-top: 30px;
       }
       th {
         border: 1px solid #acacac;
@@ -50,44 +62,64 @@
         padding: 5px;
         text-align: left;
       }
+
+      /* Ensure controls inherit font */
+      *,
+      *::before,
+      *::after {
+        font-family: inherit;
+      }
+      button,
+      input,
+      select,
+      textarea {
+        font: inherit;
+      }
+      ::placeholder {
+        font-family: inherit;
+      }
     </style>
   </head>
 
   <body>
-    <img src="images/neurotech.png" alt="NEUROTECHR3" />
-    <p>Laptop Inventory</p>
-    <button onclick="location.href='addLaptop.html'">Add Laptop</button>
+    <main class="container">
+      <div class="header">
+        <img class="logo" src="images/neurotech.png" alt="NEUROTECHR3" />
+        <p class="title">Laptop Inventory</p>
+      </div>
 
-    <table>
-      <thead>
-        <tr>
-          <th>Laptop Number</th>
-          <th>Status</th>
-          <th>Device Info</th>
-          <th>Location TYPE</th>
-          <th>User ID</th>
-          <th>Any Desk</th>
-        </tr>
-      </thead>
-      <tbody id="laptop-table-body"></tbody>
-    </table>
+      <div class="actions">
+        <button onclick="location.href='addLaptop.html'">Add Laptop</button>
+      </div>
+      <table>
+        <thead>
+          <tr>
+            <th>Laptop Number</th>
+            <th>Status</th>
+            <th>Device Info</th>
+            <th>Location TYPE</th>
+            <th>User ID</th>
+            <th>Any Desk</th>
+          </tr>
+        </thead>
+        <tbody id="laptop-table-body"></tbody>
+      </table>
 
-    <script>
-      const API_BASE = "https://inventoryapptest-production.up.railway.app";
+      <script>
+        const API_BASE = "https://inventoryapptest-production.up.railway.app";
 
-      async function loadLaptops() {
-        try {
-          // cache-buster query param so you always see fresh data
-          const res = await fetch(`${API_BASE}/api/LapTop?ts=${Date.now()}`);
-          if (!res.ok) throw new Error("Failed to load laptops");
+        async function loadLaptops() {
+          try {
+            const res = await fetch(`${API_BASE}/api/LapTop?ts=${Date.now()}`);
+            if (!res.ok) throw new Error("Failed to load laptops");
 
-          const laptops = await res.json();
-          const tbody = document.getElementById("laptop-table-body");
-          tbody.innerHTML = "";
+            const laptops = await res.json();
+            const tbody = document.getElementById("laptop-table-body");
+            tbody.innerHTML = "";
 
-          laptops.forEach((l) => {
-            const row = document.createElement("tr");
-            row.innerHTML = `
+            laptops.forEach((l) => {
+              const row = document.createElement("tr");
+              row.innerHTML = `
               <td><a href="detailedView.html?pcNumber=${encodeURIComponent(
                 l.pcNumber || ""
               )}">
@@ -99,18 +131,16 @@
               <td>${l.userID || ""}</td>
               <td>${l.anyDesk ?? ""}</td>
             `;
-            tbody.appendChild(row);
-          });
-        } catch (err) {
-          console.error("Error loading laptops:", err);
-          alert("Failed to load laptops from the server.");
+              tbody.appendChild(row);
+            });
+          } catch (err) {
+            console.error("Error loading laptops:", err);
+            alert("Failed to load laptops from the server.");
+          }
         }
-      }
 
-      // Load on page open
-      loadLaptops();
-    </script>
+        loadLaptops();
+      </script>
+    </main>
   </body>
 </html>
-
-
