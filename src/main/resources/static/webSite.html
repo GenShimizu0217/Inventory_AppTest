@@ -79,6 +79,14 @@
         font-family: inherit;
       }
     </style>
+    
+    <script>
+  // Check if user is logged in
+  if (sessionStorage.getItem("loggedIn") !== "true") {
+    // Not logged in → send back to login
+    window.location.href = "login.html";
+  }
+</script>
   </head>
 
   <body>
